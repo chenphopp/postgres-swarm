@@ -1,0 +1,42 @@
+version: "3.9"
+###############################################
+volumes:
+  postgres-data: 
+    external: true
+###############################################
+networks:
+  backend:
+###############################################
+services:
+###############################################
+   db:
+    hostname: tms-postgres
+    image: 192.168.50.50:4000/postgis/postgis:15-3.3
+    environment:
+      # TZ: ${TimeZone}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pgEbiAdmin}
+      POSTGRES_INITDB_ARGS: "--auth-host=md5 --auth-local=md5"
+      PGDATA: /data/openScheduleDB
+    volumes:
+      - postgres-data:/data/openScheduleDB
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+###############################################
+   pgadmin:
+    hostname: tms-pgadmin
+    image: 192.168.50.50:4000/dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - ./data/pgadmin:/data
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      - db
+    networks:
+      - backend
